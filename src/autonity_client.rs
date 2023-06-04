@@ -19,7 +19,6 @@ impl AutonityClient {
         }
     }
 
-    // Define your methods here. As an example, get the network version
     // Network version
     pub async fn get_network_version(&self) -> Result<String, Error> {
         let request_body = json!({
@@ -52,6 +51,7 @@ impl AutonityClient {
         let balance_hex = result["result"].as_str().unwrap().to_string();
         // Remove "0x" prefix
         let balance_hex_trimmed = balance_hex.trim_start_matches("0x");
+        // Convert to int128 and return as string
         let balance = i128::from_str_radix(&balance_hex_trimmed, 16)
             .unwrap()
             .to_string();
@@ -63,17 +63,17 @@ impl AutonityClient {
         &self,
         to: &str,
         value: u64,
-        gas: u64, // private_key_file: &str,
+        gas: u64,
     ) -> Result<H256, Box<dyn std::error::Error>> {
         let transport = web3::transports::Http::new(&self.url)?;
         let web3 = web3::Web3::new(transport);
 
-        // Parse the addres
+        // Parse the address
         let to_address: Address = to.parse()?;
 
         // Get and read the private key file
         let private_key_file: String = Input::new()
-            .with_prompt("Enter the keyfile absolute path")
+            .with_prompt("Enter the keyfile path")
             .interact()
             .expect("Failed to read input");
 
@@ -84,6 +84,7 @@ impl AutonityClient {
         let private_key_bytes: Vec<u8> = key_content.trim_start_matches("0x").from_hex()?;
         let private_key = SecretKey::from_slice(&private_key_bytes)?;
 
+        // TODO: Change so is not hardcoded
         let _chain_id = 65100000;
 
         // Create the transaction
